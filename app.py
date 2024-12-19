@@ -1,24 +1,24 @@
-from flask import Flask, jsonify, json
-import psycopg2
-import os
 import logging
+import os
 
+import psycopg2
+from flask import Flask, jsonify, json
 from psycopg2 import OperationalError
 
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s',  # Log message format
+                    format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers=[logging.StreamHandler()])
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
 
-# PostgreSQL connection parameters
-DB_HOST = os.getenv('DB_HOST', 'localhost')
+replica_hostname = os.getenv("HOSTNAME", "default")
+
+DB_HOST = os.getenv('DB_HOST', 'db')
 DB_NAME = os.getenv('DB_NAME', 'pyserver')
 DB_USER = os.getenv('DB_USER', 'postgres')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
 
 
-# Connect to PostgreSQL database
 def get_db_connection():
     try:
         conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, host=DB_HOST, password=DB_PASSWORD)
@@ -30,19 +30,24 @@ def get_db_connection():
 
 @app.route('/')
 def home():
-    return jsonify({"message": "Welcome to the Python Web Server!"})
+    return jsonify({"message": f"Welcome to the Python Web Server!"})
+
+
+@app.route("/health")
+def health():
+    return jsonify({"message": f"Replica: hostname: {replica_hostname} is healthy"}), 200
 
 
 @app.route('/products')
 def products():
     conn = get_db_connection()
     if not conn:
-        return jsonify({"error": "Error connecting to database"}), 500
+        return jsonify({"Error": "Error connecting to database"}), 500
 
     try:
         cursor = conn.cursor()
         logger.debug("Fetching all products from the database.")
-        cursor.execute("SELECT * FROM products;")  # Assuming 'products' is your table
+        cursor.execute("SELECT * FROM products;")
         products = cursor.fetchall()
         cursor.close()
 
@@ -59,6 +64,5 @@ def products():
         return f"Error retrieving products: {str(e)}"
 
 
-# Start the web server
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
