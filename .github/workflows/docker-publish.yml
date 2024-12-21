@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Docker Image and List Docker Images
         run: |
-          docker-compose build
+          docker compose build
           echo $TAG
           docker image ls
           docker tag pyserver:latest ${{ secrets.DOCKER_USERNAME }}/pyserver:$TAG
