@@ -2,6 +2,8 @@ name: Build and push docker image
 
 on:
   push:
+    tags:
+      - '*'
     branches:
       - main
 jobs:
@@ -18,10 +20,19 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set Image Tag
+        id: set-tag
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="latest"
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build Docker Image and List Docker Images
         run: |
-          docker compose build
+          docker compose build --build-arg TAG=${{ secrets.DOCKER_USERNAME }}/pyserver:$TAG
           docker image ls
 
       - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/pyserver:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/pyserver:$TAG
