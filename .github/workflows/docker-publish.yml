@@ -24,14 +24,18 @@ jobs:
         id: set-tag
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG="${GITHUB_REF#refs/tags/}"
+            TAG="${GITHUB_REF/refs\/tags\//}"
           else
             TAG="latest"
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
+
       - name: Build Docker Image and List Docker Images
         run: |
-          docker compose build --build-arg TAG=${{ secrets.DOCKER_USERNAME }}/pyserver:$TAG
+          docker-compose build
+          echo $TAG
+          docker image ls
+          docker tag pyserver:latest ${{ secrets.DOCKER_USERNAME }}/pyserver:$TAG
           docker image ls
 
       - name: Push Docker Image
