@@ -1,6 +1,7 @@
 services:
   web:
     build: .
+    image: ${{secrets.DOCKER_USERNAME}}/pyserver:latest
     ports:
       - "5000"
     environment:
