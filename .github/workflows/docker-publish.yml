@@ -33,10 +33,8 @@ jobs:
       - name: Build Docker Image and List Docker Images
         run: |
           docker compose build
-          echo $TAG
-          docker image ls
-          docker tag pyserver:latest ${{ secrets.DOCKER_USERNAME }}/pyserver:$TAG
-          docker image ls
+          echo "Built image with tag: $TAG"
+          echo docker image ls
 
       - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/pyserver:$TAG
+        run: docker push $DOCKER_USERNAME/pyserver:$TAG

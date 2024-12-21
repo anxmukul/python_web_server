@@ -1,6 +1,7 @@
 services:
   web:
     build: .
+    image: ${DOCKER_USERNAME}/pyserver:${TAG}
     ports:
       - "5000"
     environment:
